@@ -1,0 +1,45 @@
+name: CD
+concurrency:
+  group: CD
+  cancel-in-progress: true
+on:
+  push:
+    branches:
+      - 'master'
+  pull_request:
+    branches:
+      - 'master'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - name: Run build task
+        run: pnpm run build
+      - name: deploy pipelines
+        uses: cross-the-world/ssh-scp-ssh-pipelines@latest
+        with:
+          host: ${{ secrets.DC_HOST }}
+          user: ${{ secrets.DC_USER }}
+          pass: ${{ secrets.DC_PASS }}
+          first_ssh: |
+            rm /www/wwwroot/server/web/builder/* -r --force
+          scp: |
+            ./dist/* => /www/wwwroot/server/web/builder/
+          last_ssh: |
+            nginx -t
+            nginx -s reload
