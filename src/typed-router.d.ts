@@ -19,12 +19,14 @@ declare module 'vue-router/auto-routes' {
    */
   export interface RouteNamedMap {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
+    '/compoonents/AbsoluteSheet': RouteRecordInfo<'/compoonents/AbsoluteSheet', '/compoonents/AbsoluteSheet', Record<never, never>, Record<never, never>>,
     '/compoonents/AttrSheet': RouteRecordInfo<'/compoonents/AttrSheet', '/compoonents/AttrSheet', Record<never, never>, Record<never, never>>,
     '/compoonents/ContextMenu': RouteRecordInfo<'/compoonents/ContextMenu', '/compoonents/ContextMenu', Record<never, never>, Record<never, never>>,
     '/compoonents/CustomForm': RouteRecordInfo<'/compoonents/CustomForm', '/compoonents/CustomForm', Record<never, never>, Record<never, never>>,
     '/compoonents/DragSheet': RouteRecordInfo<'/compoonents/DragSheet', '/compoonents/DragSheet', Record<never, never>, Record<never, never>>,
     '/compoonents/DropSheet': RouteRecordInfo<'/compoonents/DropSheet', '/compoonents/DropSheet', Record<never, never>, Record<never, never>>,
     '/compoonents/JsonEditor': RouteRecordInfo<'/compoonents/JsonEditor', '/compoonents/JsonEditor', Record<never, never>, Record<never, never>>,
+    '/compoonents/ResumeSheet': RouteRecordInfo<'/compoonents/ResumeSheet', '/compoonents/ResumeSheet', Record<never, never>, Record<never, never>>,
     '/compoonents/Toolbar': RouteRecordInfo<'/compoonents/Toolbar', '/compoonents/Toolbar', Record<never, never>, Record<never, never>>,
     '/drop-components/absolute/Header': RouteRecordInfo<'/drop-components/absolute/Header', '/drop-components/absolute/Header', Record<never, never>, Record<never, never>>,
     '/drop-components/resume/Blank': RouteRecordInfo<'/drop-components/resume/Blank', '/drop-components/resume/Blank', Record<never, never>, Record<never, never>>,

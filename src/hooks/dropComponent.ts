@@ -238,5 +238,6 @@ export function useDropComponent() {
     setSpotStyle,
     shapeMouseDownHandler,
     spotMouseDownHandler,
+    activeDropc,
   };
 }

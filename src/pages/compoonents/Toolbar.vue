@@ -233,7 +233,7 @@ function updateConfig(newConfig: string) {
 
 const modeItems = reactive([
   { label: "简历", value: SHEET_MODE.RESUME },
-  { label: "页面流", value: SHEET_MODE.FLOW },
+  // { label: "页面流", value: SHEET_MODE.FLOW },
   { label: "绝对定位", value: SHEET_MODE.ABSOLUTE },
 ]);
 

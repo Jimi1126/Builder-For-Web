@@ -1,6 +1,6 @@
 <template>
   <div class="resume-header">
-    <div class="title">
+    <div class="header">
       <input
         class="name"
         :value="config.name"
@@ -15,8 +15,8 @@
       />
     </div>
     <hr />
-    <div class="labels">
-      <template v-for="(label, i) in config.labels" :key="i">
+    <div class="labels" ref="draggableEl">
+      <template v-for="(label, i) in config.labels" :key="label.id">
         <div class="label">
           <template v-if="!(i % 2)">
             <v-icon
@@ -114,6 +114,7 @@
 <script lang="ts">
 import { SHEET_MODE } from "@/constant/enum";
 import { useWorkshopImmer } from "@/hooks/immer";
+import useMyDraggable from "@/hooks/myDraggable";
 import { DefaultFlowtAttr } from "@/pages/attrDefined";
 import type { DropCopmonent } from "@/workshop";
 import { debounce } from "radash";
@@ -133,10 +134,10 @@ export const componentInfo = {
     name: "XXX",
     job: "XXX工程师",
     labels: [
-      { type: "text", text: "今天的风甚是喧嚣" },
-      { type: "text", text: "个人网站" },
-      { type: "text", text: "钓鱼佬" },
-      { type: "text", text: "XXX@XXX.com" },
+      { id: 1, type: "text", text: "今天的风甚是喧嚣" },
+      { id: 2, type: "text", text: "个人网站" },
+      { id: 3, type: "text", text: "钓鱼佬" },
+      { id: 4, type: "text", text: "XXX@XXX.com" },
     ],
   },
 };
@@ -157,7 +158,9 @@ export default {
           (dc: DropCopmonent) => dc.id == props.id
         );
         if (!dropcomponent) return;
-        dropcomponent.config.labels.splice(i + 1, 0, {});
+        dropcomponent.config.labels.splice(i + 1, 0, {
+          id: new Date().getTime(),
+        });
       });
     }
 
@@ -226,6 +229,8 @@ export default {
       endEdit
     );
 
+    const { draggableEl } = useMyDraggable(props.config.labels);
+
     return {
       iconDailogVisiable,
       linkDailogVisiable,
@@ -238,11 +243,16 @@ export default {
       selctLink,
       addLink,
       debounceEdit,
+      draggableEl,
     };
   },
 };
 </script>
 <style lang="scss" scoped>
+.ghost {
+  opacity: 0.5;
+  background: #c8ebfb;
+}
 .resume-header {
   display: flex;
   flex-direction: column;
@@ -266,7 +276,7 @@ export default {
     opacity: 0.6;
   }
 
-  .title {
+  .header {
     display: grid;
     grid-template-columns: 1fr 1fr;
     justify-items: start;

@@ -1,5 +1,5 @@
 <template>
-  <div class="project-experience">
+  <div class="project-experience" ref="draggableEl">
     <template v-for="(item, i) in config.items" :key="i">
       <div class="border card">
         <div class="title">
@@ -83,6 +83,7 @@
 </template>
 <script lang="ts">
 import { useWorkshopImmer } from "@/hooks/immer";
+import useMyDraggable from "@/hooks/myDraggable";
 import { DefaultFlowtAttr } from "@/pages/attrDefined";
 import type { DropCopmonent } from "@/workshop";
 import { debounce } from "radash";
@@ -140,7 +141,9 @@ export default {
           (dc: DropCopmonent) => dc.id == props.id
         );
         if (!dropcomponent) return;
-        dropcomponent.config.items.splice(i + 1, 0, {});
+        dropcomponent.config.items.splice(i + 1, 0, {
+          id: new Date().getTime(),
+        });
       });
     }
 
@@ -170,6 +173,8 @@ export default {
       inputEvt
     );
 
+    const { draggableEl } = useMyDraggable(props.config.items);
+
     return {
       getTags,
       stackEditable,
@@ -179,6 +184,7 @@ export default {
       addItem,
       delItem,
       debounceInputEvt,
+      draggableEl,
     };
   },
   mounted() {

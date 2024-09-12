@@ -16,6 +16,7 @@
     "radash": "^12.1.0",
     "roboto-fontface": "*",
     "vue": "^3.4.21",
+    "vue-draggable-plus": "^0.5.3",
     "vuetify": "^3.5.8"
   },
   "devDependencies": {

@@ -1,52 +1,72 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <template>
-  <v-timeline class="work-experience" side="end">
-    <v-timeline-item
-      v-for="(item, i) in config.items"
-      :key="item.company"
-      :dot-color="workshopStore.snapshot.theme"
-    >
-      <template v-slot:icon>
-        <v-icon icon="mdi-domain"></v-icon>
-      </template>
-      <div class="border card">
-        <div class="title">
-          <input
-            class="name"
-            :value="item.company"
-            placeholder="XXXX公司"
-            @input="debounceEdit($event, i, 'company')"
-          />
-          <input
-            class="job"
-            :value="item.position"
-            placeholder=""
-            @input="debounceEdit($event, i, 'position')"
-          />
+  <VueDraggable
+    v-model="config.items"
+    :animation="150"
+    target="#draggable-timeline"
+    handle=".handle"
+  >
+    <v-timeline class="work-experience" side="end" id="draggable-timeline">
+      <v-timeline-item
+        v-for="(item, i) in config.items"
+        :key="item.company"
+        :dot-color="workshopStore.snapshot.theme"
+      >
+        <template v-slot:icon>
+          <v-icon icon="mdi-domain"></v-icon>
+        </template>
+        <div class="handle border card">
+          <div class="title">
+            <input
+              class="name"
+              :value="item.company"
+              placeholder="XXXX公司"
+              @input="debounceEdit($event, i, 'company')"
+            />
+            <input
+              class="job"
+              :value="item.position"
+              placeholder=""
+              @input="debounceEdit($event, i, 'position')"
+            />
+          </div>
+          <textarea
+            ref="textareaRefs"
+            :value="item.details"
+            rows="1"
+            placeholder="1. 负责 XXX 项目开发；2. 主导 XXX 平台建设；..."
+            @input="autoResize($event, i)"
+          ></textarea>
+          <div v-if="!preview" class="card-actions">
+            <v-icon
+              color="primary"
+              icon="mdi-arrow-up"
+              size="small"
+              @click="upItem(i)"
+            ></v-icon>
+            <v-icon
+              color="primary"
+              icon="mdi-arrow-down"
+              size="small"
+              @click="downItem(i)"
+            ></v-icon>
+            <v-icon
+              color="primary"
+              icon="mdi-plus"
+              size="small"
+              @click="addItem(i)"
+            ></v-icon>
+            <v-icon
+              color="primary"
+              icon="mdi-minus"
+              size="small"
+              @click="delItem(i)"
+            ></v-icon>
+          </div>
         </div>
-        <textarea
-          ref="textareaRefs"
-          :value="item.details"
-          rows="1"
-          placeholder="1. 负责 XXX 项目开发；2. 主导 XXX 平台建设；..."
-          @input="autoResize($event, i)"
-        ></textarea>
-        <div v-if="!preview" class="card-actions">
-          <v-icon
-            color="primary"
-            icon="mdi-plus"
-            size="small"
-            @click="addItem(i)"
-          ></v-icon>
-          <v-icon
-            color="primary"
-            icon="mdi-minus"
-            size="small"
-            @click="delItem(i)"
-          ></v-icon>
-        </div>
-      </div>
-    </v-timeline-item>
-  </v-timeline>
+      </v-timeline-item>
+    </v-timeline>
+  </VueDraggable>
 </template>
 <script lang="ts">
 import { useWorkshopImmer } from "@/hooks/immer";
@@ -89,7 +109,9 @@ export default {
           (dc: DropCopmonent) => dc.id == props.id
         );
         if (!dropcomponent) return;
-        dropcomponent.config.items.splice(i + 1, 0, {});
+        dropcomponent.config.items.splice(i + 1, 0, {
+          id: new Date().getTime(),
+        });
       });
     }
 
@@ -100,6 +122,39 @@ export default {
         );
         if (!dropcomponent) return;
         dropcomponent.config.items.splice(i, 1);
+      });
+    }
+
+    function upItem(i: number) {
+      setSheetState((draft: any) => {
+        const dropcomponent = draft.dropComponents.find(
+          (dc: DropCopmonent) => dc.id == props.id
+        );
+        if (!dropcomponent) return;
+        const items: any[] = dropcomponent.config.items;
+        if (i) {
+          [items[i], items[i - 1]] = [items[i - 1], items[i]];
+        } else {
+          [items[i], items[items.length - 1]] = [
+            items[items.length - 1],
+            items[i],
+          ];
+        }
+      });
+    }
+
+    function downItem(i: number) {
+      setSheetState((draft: any) => {
+        const dropcomponent = draft.dropComponents.find(
+          (dc: DropCopmonent) => dc.id == props.id
+        );
+        if (!dropcomponent) return;
+        const items: any[] = dropcomponent.config.items;
+        if (i == items.length - 1) {
+          [items[0], items[i]] = [items[i], items[0]];
+        } else {
+          [items[i], items[i + 1]] = [items[i + 1], items[i]];
+        }
       });
     }
 
@@ -130,6 +185,8 @@ export default {
       autoResize,
       addItem,
       delItem,
+      upItem,
+      downItem,
       debounceEdit,
       textareaRefs,
     };

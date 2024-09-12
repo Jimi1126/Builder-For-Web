@@ -3,127 +3,21 @@
     class="flex-1-1 overflow-auto pa-8"
     :class="{ resume: workshopStore.snapshot.mode == SHEET_MODE.RESUME }"
   >
-    <section
-      id="sheet"
-      class="sheet"
-      :class="{
-        'grid-line': workshopStore.snapshot.gridLine,
-      }"
-      :style="getSheetStyle()"
-      @dragover.prevent
-      @dragenter.prevent
-      @dragstart.prevent
-      @drop="dropHandler"
-      @mousedown.self="sheetMouseDownHandler"
-      @contextmenu.right.prevent="contextMenuHandler"
-    >
-      <template v-if="workshopStore.snapshot.mode == SHEET_MODE.RESUME">
-        <div
-          class="shape"
-          v-for="it in workshopStore.snapshot.dropComponents"
-          :key="it.id"
-          @mousedown.stop="shapeMouseDownHandler($event, it)"
-        >
-          <component
-            :is="components[it.code] || it.code"
-            :id="it.id"
-            :class="{ active: activeDropc && it.id == activeDropc.id }"
-            v-bind="it.attrs"
-            :style="getComponentStyle(it)"
-            :events="it.events || []"
-            :config="it.config || {}"
-            @click.prevent
-          ></component>
-        </div>
-      </template>
-      <template v-else-if="workshopStore.snapshot.mode == SHEET_MODE.FLOW">
-      </template>
-      <template v-else>
-        <span
-          v-for="i in 8"
-          :key="i"
-          v-show="~workshopStore.activeIndex"
-          class="spot"
-          :style="workshopStore.spotStyles[i - 1]"
-          @mousedown.stop.prevent="spotMouseDownHandler($event, i)"
-        ></span>
-        <div
-          class="absolute-shape"
-          v-for="it in workshopStore.snapshot.dropComponents"
-          :key="it.id"
-          @mousedown.stop="shapeMouseDownHandler($event, it)"
-        >
-          <component
-            :is="components[it.code] || it.code"
-            :key="it.id"
-            v-bind="it.attrs"
-            :style="getComponentStyle(it)"
-            :events="it.events || []"
-            :config="it.config || {}"
-            class="drop-component"
-            :class="{ active: activeDropc && it.id == activeDropc.id }"
-            @click.prevent
-            >示例</component
-          >
-        </div>
-      </template>
-      <ContextMenu v-show="workshopStore.contextMenu.visiable" />
-    </section>
+    <ResumeSheet v-if="workshopStore.snapshot.mode == SHEET_MODE.RESUME" />
+    <AbsoluteSheet v-if="workshopStore.snapshot.mode == SHEET_MODE.ABSOLUTE" />
   </main>
 </template>
 
 <script lang="ts" setup>
 import { useWorkshopStore } from "@/stores/workshop";
-import { useSheet } from "@/hooks/sheet";
-import { useDropComponent } from "@/hooks/dropComponent";
-import ContextMenu from "@/pages/compoonents/ContextMenu.vue";
-import { useAsyncDropComponent } from "@/hooks/asyncComponent";
 import { SHEET_MODE } from "@/constant/enum";
+import AbsoluteSheet from "@/pages/compoonents/AbsoluteSheet.vue";
+import ResumeSheet from "@/pages/compoonents/ResumeSheet.vue";
 
 const workshopStore = useWorkshopStore();
-const activeDropc = computed(() => {
-  return workshopStore.snapshot.dropComponents[workshopStore.activeIndex];
-});
-
-const {
-  getSheetStyle,
-  dropHandler,
-  sheetMouseDownHandler,
-  contextMenuHandler,
-} = useSheet();
-
-const {
-  setSpotStyle,
-  getComponentStyle,
-  shapeMouseDownHandler,
-  spotMouseDownHandler,
-} = useDropComponent();
-
-const { loadAsyncDropComponent } = useAsyncDropComponent();
-
-const components = reactive({}) as any;
-const asyncComponentCount = ref(0);
-watchEffect(() => {
-  workshopStore.snapshot.dropComponents.forEach((dc) => {
-    if (dc.skip) {
-      components[dc.code] = null;
-    } else if (!components[dc.code]) {
-      const paths = [];
-      dc.path && paths.push(dc.path);
-      paths.push(dc.code);
-      if (!paths.length) return;
-      components[dc.code] = loadAsyncDropComponent(paths.join("/"));
-      asyncComponentCount.value++;
-    }
-  });
-});
-
-onUpdated(() => {
-  setSpotStyle();
-});
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .grid-line::before {
   content: " ";
   position: absolute;
@@ -194,36 +88,12 @@ onUpdated(() => {
   }
 }
 
+.resume {
+  background-color: #9ca3af;
+}
+
 .active {
   user-select: none;
   outline: rgb(112, 192, 255) solid 1px;
-}
-
-.resume {
-  background-color: #9ca3af;
-
-  .sheet {
-    display: flex;
-    flex-direction: column;
-    gap: var(--resume-component-gap);
-    background-color: #fff;
-    padding-bottom: var(--resume-padding);
-
-    :deep(input),
-    :deep(textarea) {
-      width: 100%;
-      height: fit-content;
-      color: inherit;
-      transition: padding 200ms;
-      &:focus {
-        padding: 0 6px;
-      }
-    }
-
-    :deep(textarea) {
-      resize: none;
-      overflow: hidden;
-    }
-  }
 }
 </style>

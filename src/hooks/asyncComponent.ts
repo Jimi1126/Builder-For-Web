@@ -1,7 +1,9 @@
 import ErrorComponent from "@/components/ErrorComponent.vue";
 import LoadingComponent from "@/components/LoadingComponent.vue";
 import { useDropComponent } from "@/hooks/dropComponent";
+import { useWorkshopStore } from "@/stores/workshop";
 
+const workshopStore = useWorkshopStore();
 const { setSpotStyle } = useDropComponent();
 
 const modules = import.meta.glob(`../pages/drop-components/**/*.vue`);
@@ -36,6 +38,36 @@ function loadAsyncDropComponent(path: string, cb: Function = () => {}) {
   return AsyncComp;
 }
 
+const components = reactive({}) as any;
+
+const asyncComponentCount = ref(0);
+
+watchEffect(() => {
+  workshopStore.snapshot.dropComponents.forEach((dc) => {
+    if (dc.skip) {
+      components[dc.code] = null;
+    } else if (!components[dc.code]) {
+      const paths = [];
+      dc.path && paths.push(dc.path);
+      paths.push(dc.code);
+      if (!paths.length) return;
+      components[dc.code] = loadAsyncDropComponent(paths.join("/"), () => {
+        asyncComponentCount.value--;
+        if (asyncComponentCount.value == 0) {
+          nextTick(() => {
+            //@ts-ignore
+            if (window.loadConfigState == "loaded") {
+              //@ts-ignore
+              window.loadConfigState = "updated";
+            }
+          });
+        }
+      });
+      asyncComponentCount.value++;
+    }
+  });
+});
+
 export function useAsyncDropComponent() {
-  return { loadAsyncDropComponent };
+  return { components, asyncComponentCount };
 }

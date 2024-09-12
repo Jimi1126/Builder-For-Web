@@ -40,35 +40,7 @@ import { colorReverse } from "@/hooks/pureFun";
 const workshopStore = useWorkshopStore();
 const { getSheetStyle } = useSheet();
 const { getComponentStyle } = useDropComponent();
-const { loadAsyncDropComponent } = useAsyncDropComponent();
-
-const components = reactive({}) as any;
-const asyncComponentCount = ref(0);
-watchEffect(() => {
-  workshopStore.snapshot.dropComponents.forEach((dc) => {
-    if (dc.skip) {
-      components[dc.code] = null;
-    } else if (!components[dc.code]) {
-      const paths = [];
-      dc.path && paths.push(dc.path);
-      paths.push(dc.code);
-      if (!paths.length) return;
-      components[dc.code] = loadAsyncDropComponent(paths.join("/"), () => {
-        asyncComponentCount.value--;
-        if (asyncComponentCount.value == 0) {
-          nextTick(() => {
-            //@ts-ignore
-            if (window.loadConfigState == "loaded") {
-              //@ts-ignore
-              window.loadConfigState = "updated";
-            }
-          });
-        }
-      });
-      asyncComponentCount.value++;
-    }
-  });
-});
+const { components } = useAsyncDropComponent();
 
 //@ts-ignore
 window.loadConfig = function (config) {
