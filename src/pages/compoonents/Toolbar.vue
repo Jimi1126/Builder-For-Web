@@ -1,9 +1,18 @@
 <template>
   <v-toolbar color="primary" :elevation="2">
     <v-row>
-      <v-col cols="9" class="toolbar-btn">
+      <v-col cols="8" class="toolbar-btn">
         <v-btn @click="showConfig(0)">全量配置</v-btn>
         <v-btn @click="showConfig(1)">组件配置</v-btn>
+        <v-btn
+          @click="
+            () => {
+              doLocalStorage();
+              snackbarVisiable = true;
+            }
+          "
+          >保存</v-btn
+        >
         <v-menu open-on-hover>
           <template v-slot:activator="{ props }">
             <v-btn v-bind="props"> 导出 </v-btn>
@@ -41,7 +50,7 @@
         <v-btn>保存</v-btn> -->
         <v-btn @click="$router.push('/preview')">预览</v-btn>
       </v-col>
-      <v-col cols="3" class="toolbar-field">
+      <v-col cols="4" class="toolbar-field">
         <v-select
           v-model="workshopStore.snapshot.mode"
           label="模式"
@@ -65,6 +74,30 @@
               :color="workshopStore.snapshot.theme"
               @click="
                 () => {
+                  colorFeildName = 'theme';
+                  selectColor = workshopStore.snapshot.theme;
+                  themeVisiable = true;
+                }
+              "
+            ></v-btn>
+          </template>
+        </v-text-field>
+        <v-text-field
+          v-model="workshopStore.snapshot.reverseTheme"
+          label="主题反色"
+          variant="outlined"
+          density="compact"
+        >
+          <template #append-inner>
+            <v-btn
+              size="small"
+              density="compact"
+              icon="mdi-palette"
+              :color="workshopStore.snapshot.reverseTheme"
+              @click="
+                () => {
+                  colorFeildName = 'reverseTheme';
+                  selectColor = workshopStore.snapshot.reverseTheme;
                   themeVisiable = true;
                 }
               "
@@ -88,19 +121,11 @@
             class="w-100"
             :modes="['hexa']"
             show-swatches
-            v-model="workshopStore.snapshot.theme"
+            v-model="selectColor"
           ></v-color-picker>
         </template>
         <template v-slot:actions>
-          <v-btn
-            class="ms-auto"
-            text="确定"
-            @click="
-              () => {
-                themeVisiable = false;
-              }
-            "
-          ></v-btn>
+          <v-btn class="ms-auto" text="确定" @click="selectColorEvt"></v-btn>
         </template>
       </v-card>
     </template>
@@ -110,11 +135,14 @@
       <JsonEditor :json="setting.content" @done="updateConfig" />
     </v-card>
   </v-navigation-drawer>
+  <v-snackbar v-model="snackbarVisiable" :timeout="2000" color="primary">
+    保存成功
+  </v-snackbar>
 </template>
 
 <script lang="ts" setup>
 import { useWorkshopStore } from "@/stores/workshop";
-import { useWorkshopImmer } from "@/hooks/immer";
+import { doLocalStorage, useWorkshopImmer } from "@/hooks/immer";
 import type { DropCopmonent, SnapshotVariable } from "@/workshop";
 import { SHEET_MODE } from "@/constant/enum";
 import { ImgPositionAttr } from "@/pages/attrDefined";
@@ -127,6 +155,7 @@ const { setSheetState, undo, redo, /*reset, */ clear } = useWorkshopImmer();
 const { downloadPDF } = useDownload();
 const drawerVisiable = ref(false);
 const themeVisiable = ref(false);
+const snackbarVisiable = ref(false);
 
 watch(
   () => workshopStore.snapshot.mode,
@@ -177,16 +206,40 @@ watch(
   { immediate: true }
 );
 
+const selectColor = ref("");
+let colorFeildName = "";
+function selectColorEvt() {
+  if (colorFeildName == "theme") {
+    setSheetState((draft: SnapshotVariable) => {
+      draft.theme = selectColor.value;
+      draft.reverseTheme = colorReverse(selectColor.value);
+    });
+  } else if (colorFeildName == "reverseTheme") {
+    setSheetState((draft: SnapshotVariable) => {
+      draft.reverseTheme = selectColor.value;
+    });
+  }
+  themeVisiable.value = false;
+}
+
 watch(
-  () => workshopStore.snapshot.theme,
-  (nv) => {
+  [
+    () => workshopStore.snapshot.theme,
+    () => workshopStore.snapshot.reverseTheme,
+  ],
+  () => {
     document.documentElement.style.setProperty(
       "--theme-color",
-      colorReverse(nv)
+      workshopStore.snapshot.reverseTheme
     );
-    document.documentElement.style.setProperty("--theme-bg-color", nv);
+    document.documentElement.style.setProperty(
+      "--theme-bg-color",
+      workshopStore.snapshot.theme
+    );
   },
-  { immediate: true }
+  {
+    immediate: true,
+  }
 );
 
 const setting = reactive({

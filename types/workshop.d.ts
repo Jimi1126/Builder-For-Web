@@ -60,6 +60,7 @@ export type SpotStyle = {
 export type SnapshotVariable = {
   mode: string;
   theme: string;
+  reverseTheme: string;
   gridLine: boolean;
   suffix: string;
   globalAttr: GlobalAttr;

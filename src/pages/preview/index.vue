@@ -5,53 +5,41 @@
       resume: workshopStore.snapshot.mode == SHEET_MODE.RESUME,
     }"
   >
-    <section
-      id="sheet"
-      :style="getSheetStyle()"
-      style="width: 820px"
-      class="sheet"
-    >
-      <template
-        v-for="it in workshopStore.snapshot.dropComponents"
-        :key="it.id"
-      >
-        <component
-          class="component"
-          :is="(components as any)[it.code] || it.code"
-          v-bind="it.attrs"
-          :preview="true"
-          :style="getComponentStyle(it)"
-          :events="it.events || []"
-          :config="it.config || {}"
-        />
-      </template>
-    </section>
+    <ResumeSheet :is-preview="true" />
   </main>
 </template>
 
 <script lang="ts" setup>
-import { useDropComponent } from "@/hooks/dropComponent";
-import { useAsyncDropComponent } from "@/hooks/asyncComponent";
-import { useSheet } from "@/hooks/sheet";
 import { useWorkshopStore } from "@/stores/workshop";
 import { SHEET_MODE } from "@/constant/enum";
-import { colorReverse } from "@/hooks/pureFun";
+import ResumeSheet from "@/pages/compoonents/ResumeSheet.vue";
 
 const workshopStore = useWorkshopStore();
-const { getSheetStyle } = useSheet();
-const { getComponentStyle } = useDropComponent();
-const { components } = useAsyncDropComponent();
+
+function setTheme() {
+  const snapshot = workshopStore.snapshot;
+  document.documentElement.style.setProperty(
+    "--theme-color",
+    snapshot.reverseTheme
+  );
+  document.documentElement.style.setProperty(
+    "--theme-bg-color",
+    snapshot.theme
+  );
+}
+
+onMounted(setTheme);
 
 //@ts-ignore
 window.loadConfig = function (config) {
   workshopStore.snapshot = config;
-  document.documentElement.style.setProperty(
-    "--theme-color",
-    colorReverse(config.theme)
-  );
-  document.documentElement.style.setProperty("--theme-bg-color", config.theme);
+  setTheme();
   //@ts-ignore
-  window.loadConfigState = "loaded";
+  // window.loadConfigState = "loaded";
+  nextTick(() => {
+    //@ts-ignore
+    window.loadConfigState = "updated";
+  });
 };
 </script>
 
@@ -64,13 +52,13 @@ window.loadConfig = function (config) {
 }
 
 .resume {
+  width: 820px;
+  margin: auto;
   background-color: #9ca3af;
 
   .sheet {
     display: flex;
     flex-direction: column;
-    gap: var(--resume-component-gap);
-    background-color: #fff;
 
     :deep(input),
     :deep(textarea) {
@@ -84,6 +72,12 @@ window.loadConfig = function (config) {
       resize: none;
       overflow: hidden;
     }
+  }
+}
+
+@media print {
+  .resume {
+    background-color: #fff;
   }
 }
 </style>

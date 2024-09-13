@@ -59,6 +59,7 @@ export default {
   display: grid;
   grid-template-columns: 1fr 120px 1fr;
   padding: 0 var(--resume-padding);
+  margin: var(--resume-component-gap) 0;
   gap: var(--theme-display-gap);
   align-items: center;
   hr {

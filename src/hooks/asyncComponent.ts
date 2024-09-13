@@ -53,15 +53,15 @@ watchEffect(() => {
       if (!paths.length) return;
       components[dc.code] = loadAsyncDropComponent(paths.join("/"), () => {
         asyncComponentCount.value--;
-        if (asyncComponentCount.value == 0) {
-          nextTick(() => {
-            //@ts-ignore
-            if (window.loadConfigState == "loaded") {
-              //@ts-ignore
-              window.loadConfigState = "updated";
-            }
-          });
-        }
+        // if (asyncComponentCount.value == 0) {
+        //   nextTick(() => {
+        //     //@ts-ignore
+        //     if (window.loadConfigState == "loaded") {
+        //       //@ts-ignore
+        //       window.loadConfigState = "updated";
+        //     }
+        //   });
+        // }
       });
       asyncComponentCount.value++;
     }

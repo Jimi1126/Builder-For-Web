@@ -1,13 +1,14 @@
 <template>
   <div class="resume-sort-list">
-    <textarea
+    <component
+      :is="isPreview ? ContentWrap : 'textarea'"
       ref="textareaRefs"
       :rows="1"
       :value="config.content"
       @input="autoResize"
       placeholder="1. 拥有 X 年工作经验，具备XXX领域的专业技能；\n2. 精通 XXX 技术；\n3. ..."
     >
-    </textarea>
+    </component>
   </div>
 </template>
 <script lang="ts">
@@ -15,6 +16,7 @@ import { useWorkshopImmer } from "@/hooks/immer";
 import { DefaultFlowtAttr } from "@/pages/attrDefined";
 import type { DropCopmonent } from "@/workshop";
 import { debounce } from "radash";
+import ContentWrap from "@/pages/compoonents/ContentWrap.vue";
 
 export const componentInfo = {
   code: "SortList",
@@ -30,7 +32,7 @@ export const componentInfo = {
   },
 };
 export default {
-  props: ["id", "events", "config"],
+  props: ["id", "events", "config", "isPreview"],
   setup(props) {
     const { setSheetState } = useWorkshopImmer();
     const textareaRefs = ref<HTMLAreaElement | null>(null);
@@ -57,10 +59,10 @@ export default {
       endEdit
     );
 
-    return { textareaRefs, autoResize };
+    return { textareaRefs, autoResize, ContentWrap };
   },
   mounted() {
-    if (this.textareaRefs) {
+    if (this.textareaRefs && !this.isPreview) {
       this.textareaRefs.style.height = "auto";
       this.textareaRefs.style.height = this.textareaRefs.scrollHeight + "px";
     }
@@ -70,8 +72,10 @@ export default {
 <style lang="scss" scoped>
 .resume-sort-list {
   padding: 0 var(--resume-padding);
+
   textarea {
     width: 100%;
+    height: auto;
     transition: all 200ms;
     &:focus {
       padding: 6px;

@@ -25,7 +25,7 @@
               size="small"
             ></v-icon>
           </template>
-          <template v-if="preview">
+          <template v-if="isPreview">
             <a v-if="label.link" :href="label.link" target="_blank">
               {{ label.text }}</a
             >
@@ -44,7 +44,7 @@
               size="small"
             ></v-icon>
           </template>
-          <div v-if="!preview" class="input-actions">
+          <div v-if="!isPreview" class="input-actions">
             <v-icon
               color="primary"
               icon="mdi-link"
@@ -142,7 +142,7 @@ export const componentInfo = {
   },
 };
 export default {
-  props: ["id", "events", "config", "preview"],
+  props: ["id", "events", "config", "isPreview"],
   setup(props) {
     const { setSheetState } = useWorkshopImmer();
     const iconDailogVisiable = ref(false);

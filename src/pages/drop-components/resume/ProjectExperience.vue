@@ -27,6 +27,7 @@
             class="stack-chip"
             v-show="!stackEditable[i] && item.stack"
             @dblclick="setStackEditable($event, i)"
+            title="双击编辑"
           >
             <v-chip
               v-for="(tag, i) in getTags(item.stack)"
@@ -39,31 +40,37 @@
         </div>
         <div class="content">
           <span class="content-title">项目描述：</span>
-          <textarea
+          <component
+            :is="isPreview ? 'div' : 'textarea'"
             ref="textareaRefs"
             :value="item.details"
             placeholder="项目描述"
             rows="1"
             @input="autoResize($event, i, 'details')"
-          ></textarea>
+            >{{ item.details }}</component
+          >
           <span class="content-title">项目职责：</span>
-          <textarea
+          <component
+            :is="isPreview ? 'div' : 'textarea'"
             ref="textareaRefs"
             :value="item.duty"
             placeholder="项目职责"
             rows="1"
             @input="autoResize($event, i, 'duty')"
-          ></textarea>
+            >{{ item.duty }}</component
+          >
           <span class="content-title">项目绩效：</span>
-          <textarea
+          <component
+            :is="isPreview ? 'div' : 'textarea'"
             ref="textareaRefs"
             :value="item.performance"
             placeholder="项目绩效"
             rows="1"
             @input="autoResize($event, i, 'performance')"
-          ></textarea>
+            >{{ item.performance }}</component
+          >
         </div>
-        <div v-if="!preview" class="card-actions">
+        <div v-if="!isPreview" class="card-actions">
           <v-icon
             color="primary"
             icon="mdi-plus"
@@ -104,7 +111,7 @@ export const componentInfo = {
   },
 };
 export default {
-  props: ["id", "events", "config", "preview"],
+  props: ["id", "events", "config", "isPreview"],
   setup(props) {
     const { setSheetState } = useWorkshopImmer();
     const stackEditable = ref<boolean[]>([]);
@@ -190,7 +197,7 @@ export default {
   mounted() {
     this.textareaRefs.forEach((itemRef) => {
       itemRef.style.height = "auto";
-      itemRef.style.height = itemRef.scrollHeight + "px";
+      if (!this.isPreview) itemRef.style.height = itemRef.scrollHeight + "px";
     });
   },
 };
@@ -232,6 +239,7 @@ div.project-experience {
         margin: 4px 0;
 
         .v-chip {
+          font-size: 12px;
           color: var(--theme-bg-color);
           background-color: var(--theme-color);
         }
